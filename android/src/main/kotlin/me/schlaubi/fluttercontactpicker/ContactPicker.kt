@@ -4,6 +4,7 @@ package me.schlaubi.fluttercontactpicker
 
 import android.app.Activity
 import android.content.ContentResolver
+import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.database.Cursor
@@ -34,12 +35,13 @@ class ContactPicker private constructor(private val pickContext: PickContext, pr
     }
 
     private fun requestPicker() {
+        val pickerIntent = Intent(Intent.ACTION_PICK, ContactsContract.CommonDataKinds.Phone.CONTENT_URI)
+        pickContext.addActivityResultListener(this)
         try {
-            val pickerIntent = Intent(Intent.ACTION_PICK, type)
-            pickContext.addActivityResultListener(this)
             pickContext.activity.startActivityForResult(pickerIntent, requestCode)
         } catch (e: ActivityNotFoundException) {
-            throw e
+            result.error("NO_ACTIVITY", "No activity found to handle picking contacts", null)
+            pickContext.removeActivityResultListener(this)
         }
     }
 
